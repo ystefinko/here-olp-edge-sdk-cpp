@@ -20,11 +20,13 @@ cmake_minimum_required(VERSION 3.5)
 project(olp-cpp-sdk-core VERSION 0.6.0)
 set(DESCRIPTION "Core network and utility library for OLP C++ SDK")
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake/modules")
+
 find_package(RapidJSON REQUIRED)
 
 find_package(Boost REQUIRED)
 
-find_package(leveldb REQUIRED)
+find_package(LevelDB REQUIRED)
 find_package(Snappy REQUIRED)
 
 include(configs/ConfigNetwork.cmake)
