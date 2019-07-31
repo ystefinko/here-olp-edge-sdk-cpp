@@ -19,6 +19,8 @@
 
 #include "olp/core/network2/Network.h"
 
+#include <future>
+
 namespace olp {
 namespace network2 {
 

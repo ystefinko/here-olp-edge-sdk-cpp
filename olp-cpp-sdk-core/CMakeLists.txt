@@ -41,8 +41,9 @@ else()
     set(NETWORK_NO_CURL OFF)
 
     find_package(CURL REQUIRED)
+    message(STATUS "Using libCurl as Network2 backend")
+    set(EDGE_SDK_USE_CURL_NETWORK2 ON)
 endif()
-
 
 set(Network_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
 
@@ -143,7 +144,9 @@ set(NETWORK2_SOURCE
     "${CMAKE_CURRENT_SOURCE_DIR}/src/network2/NetworkRequest.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/network2/NetworkResponse.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/network2/NetworkSettings.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/network2/Network.cpp"
 )
+
 
 if (ANDROID)
 file(GLOB NETWORK_ANDROID_SOURCE
@@ -158,6 +161,9 @@ set(NETWORK_SOURCE ${NETWORK_SOURCE} ${NETWORK_IOS_SOURCES})
 endif()
 if (WIN32)
 set(NETWORK_SOURCE ${NETWORK_SOURCE} ${NETWORK_WINHTTP_SOURCES})
+endif()
+if (UNIX AND NOT ANDROID)
+set(NETWORK2_SOURCE ${NETWORK2_SOURCE} ${NETWORK2_CURL_SOURCES})
 endif()
 
 file(GLOB PLATFORM_SOURCE
@@ -295,6 +301,7 @@ endif()
 
 # install component
 install (FILES ${NETWORK_HEADERS} DESTINATION ${INCLUDE_DIRECTORY}/olp/core/network)
+install (FILES ${NETWORK2_HEADERS} DESTINATION ${INCLUDE_DIRECTORY}/olp/core/network2)
 install (FILES ${PLATFORM_HEADERS} DESTINATION ${INCLUDE_DIRECTORY}/olp/core/platform)
 install (FILES ${PORTING_HEADERS} DESTINATION ${INCLUDE_DIRECTORY}/olp/core/porting)
 install (FILES ${UTILS_HEADERS} DESTINATION ${INCLUDE_DIRECTORY}/olp/core/utils)

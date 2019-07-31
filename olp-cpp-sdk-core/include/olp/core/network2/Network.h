@@ -21,6 +21,8 @@
 
 #include <cstdint>
 #include <functional>
+#include <memory>
+#include <ostream>
 
 #include <olp/core/CoreApi.h>
 #include <olp/core/network2/NetworkRequest.h>
@@ -73,6 +75,9 @@ class CORE_API Network {
    */
   virtual void Cancel(RequestId id) = 0;
 };
+
+CORE_API std::unique_ptr<olp::network2::Network> GetDefaultNetwork(
+    int connection_pool_size);
 
 }  // namespace network2
 }  // namespace olp

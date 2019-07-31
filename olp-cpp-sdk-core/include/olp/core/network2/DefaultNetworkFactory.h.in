@@ -17,30 +17,19 @@
  * License-Filename: LICENSE
  */
 
+/**
+ * This file is generated. Please don't touch.
+ */
+
 #pragma once
 
-#include <cstdint>
-#include <limits>
+#include <memory>
 
-namespace olp {
-namespace network2 {
+#include <olp/core/CoreApi.h>
 
-/**
- * @brief Represents request id.
- * Values of this type are returned by Network::Send and used by
- * Network::Cancel.
- */
-using RequestId = std::uint64_t;
+#cmakedefine EDGE_SDK_NO_DEFAULT_NETWORK2
 
-/**
- * @brief List of special values for NetworkRequestId.
- */
-namespace RequestIdConstants {
-
-constexpr RequestId RequestIdInvalid = std::numeric_limits<RequestId>::min();
-constexpr RequestId RequestIdMin = std::numeric_limits<RequestId>::min() + 1;
-constexpr RequestId RequestIdMax = std::numeric_limits<RequestId>::max();
-};  // namespace RequestIdConstants
-
-}  // namespace network2
-}  // namespace olp
+#ifndef EDGE_SDK_NO_DEFAULT_NETWORK2
+CORE_API std::unique_ptr<olp::network2::Network> GetDefaultNetwork(
+    int connection_pool_size);
+#endif
