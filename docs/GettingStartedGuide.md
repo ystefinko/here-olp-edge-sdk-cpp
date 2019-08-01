@@ -24,12 +24,8 @@ For more details see the [HERE OLP Data User Guide](https://developer.here.com/o
 
 ## Available components
 
-The HERE OLP Edge SDK is composed of separate libraries with their own distinct functionality.
+The HERE OLP Edge SDK is composed of separate libraries with their own distinct functionality. For a component overview please refer to the [Achitectural Overview](OverallArchitecture.md)
 
-* olp-cpp-sdk-core  - General purpose library providing platform agnostic helpers (logging, network, geo spacial helpers, cache, etc.)
-* olp-cpp-sdk-authentication - API library to get a HERE OAuth2 token to access OLP.
-* olp-cpp-sdk-dataservice-read - API library to retrieve data from OLP.
-* olp-cpp-sdk-dataservice-write - API library to upload data to OLP.
 
 ## HERE OLP Edge SDK in CMake projects
 
