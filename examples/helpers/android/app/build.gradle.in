@@ -5,7 +5,7 @@ android {
 
     defaultConfig {
         applicationId "com.here.android.olp.@EDGE_SDK_EXAMPLE_PACKAGE_NAME@"
-        minSdkVersion 15
+        minSdkVersion 21
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
