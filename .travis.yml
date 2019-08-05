@@ -30,7 +30,7 @@ matrix:
     - wget https://dl.google.com/android/repository/platform-28_r06.zip
     - unzip -qq android-ndk-r20-linux-x86_64.zip
     - unzip -qq platform-28_r06.zip
-    - export ANDROID_SDK_ROOT="$TRAVIS_BUILD_DIR/android-9.0"
+    - export ANDROID_SDK_ROOT="$TRAVIS_BUILD_DIR/android-9"
     - export ANDROID_NDK_HOME="$TRAVIS_BUILD_DIR/android-ndk-r20"
     script: $WORKSPACE/scripts/android/build.sh
   - os: osx
