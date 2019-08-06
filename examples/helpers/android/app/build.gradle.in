@@ -30,9 +30,9 @@ android {
                         "@EDGE_SDK_EXAMPLE_LEVELDB_DIR@",
                         // required for finding installed packages in sysroot
                         "-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH",
-                        "-DBOOST_ROOT=@DBOOST_ROOT@",
-                        "-DBoost_INCLUDE_DIR=@DBOOST_ROOT@",
-                        "-DBoost_LIBRARY_DIR=@DBOOST_ROOT@",
+                        "-DBOOST_ROOT=@BOOST_ROOT@",
+                        "-DBoost_INCLUDE_DIR=@BOOST_ROOT@",
+                        "-DBoost_LIBRARY_DIR=@BOOST_ROOT@",
                         "-DANDROID_PLATFORM=android-28"
 
                 cppFlags "-std=c++11"
