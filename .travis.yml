@@ -7,9 +7,7 @@ addons:
     packages:
     - cmake
     - libssl-dev
-    - libcurl4-openssl-dev 
-    - libboost-all-dev
-    - libboost-dev
+    - libcurl4-openssl-dev
     - clang
 matrix:
   include:
