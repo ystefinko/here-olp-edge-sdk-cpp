@@ -58,7 +58,7 @@ function(gen_android_example_application
     set(BOOST_ROOT "-DBOOST_ROOT='full path to the boost library in your env'")
     # Try to find the path to the boost
     if (DEFINED olp-cpp-sdk-core_BINARY_DIR)
-        set(BOOST_ROOT "-DBOOST_ROOT='$WORKSPACE/build/external/boost/external_boost/boost'")
+        set(BOOST_ROOT "-DBOOST_ROOT='${WORKSPACE}/build/external/boost/external_boost/boost'")
     endif()
 
     set(EDGE_SDK_EXAMPLE_LEVELDB_DIR "-Dleveldb_DIR='path to the directory which contains LevelDB cmake config files'")
