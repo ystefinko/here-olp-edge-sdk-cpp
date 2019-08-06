@@ -29,7 +29,11 @@ android {
                         "@EDGE_SDK_EXAMPLE_NETWORK_PROTOCOL_JAR@",
                         "@EDGE_SDK_EXAMPLE_LEVELDB_DIR@",
                         // required for finding installed packages in sysroot
-                        "-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH"
+                        "-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH",
+                        "-DBOOST_ROOT=@DBOOST_ROOT@",
+                        "-DBoost_INCLUDE_DIR=@DBOOST_ROOT@",
+                        "-DBoost_LIBRARY_DIR=@DBOOST_ROOT@",
+                        "-DANDROID_PLATFORM=android-28"
 
                 cppFlags "-std=c++11"
                 targets "@EDGE_SDK_EXAMPLE_TARGET_NAME@"
