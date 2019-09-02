@@ -54,7 +54,7 @@ add_custom_command(
         ${CMAKE_CURRENT_SOURCE_DIR}/libs/${EDGE_SDK_NETWORK_PROTOCOL_JAR_NAME}
 )
 
-target_include_directories(dataservice-read-example
+target_include_directories(@EDGE_SDK_EXAMPLE_TARGET_NAME@
     PUBLIC
         ${Boost_INCLUDE_DIRS}
 )

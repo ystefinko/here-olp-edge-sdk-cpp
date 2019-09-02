@@ -18,7 +18,7 @@
 cmake_minimum_required(VERSION 3.5)
 
 project(olp-cpp-sdk-core VERSION 0.6.0)
-set(DESCRIPTION "Core network and utility library for OLP C++ SDK")
+set(DESCRIPTION "Core network and utility library for the HERE OLP SDK C++")
 
 find_package(RapidJSON REQUIRED)
 find_package(Boost REQUIRED)
@@ -73,12 +73,12 @@ file(GLOB GENERATED_HEADERS
 file(GLOB NETWORK_HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/include/olp/core/network/*.h"
 )
-set(NETWORK2_HEADERS
-    "${CMAKE_CURRENT_SOURCE_DIR}/include/olp/core/network2/Network.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/include/olp/core/network2/NetworkProxySettings.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/include/olp/core/network2/NetworkRequest.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/include/olp/core/network2/NetworkResponse.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/include/olp/core/network2/NetworkSettings.h"
+set(EDGE_SDK_HTTP_HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/olp/core/http/Network.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/olp/core/http/NetworkProxySettings.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/olp/core/http/NetworkRequest.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/olp/core/http/NetworkResponse.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/olp/core/http/NetworkSettings.h"
 )
 file(GLOB PLATFORM_HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/include/olp/core/context/*.h"
@@ -138,11 +138,13 @@ file(GLOB NETWORK_SOURCE
     "${CMAKE_CURRENT_SOURCE_DIR}/src/network/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/network/*.h"
 )
-set(NETWORK2_SOURCE
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/network2/NetworkProxySettings.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/network2/NetworkRequest.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/network2/NetworkResponse.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/network2/NetworkSettings.cpp"
+
+set(EDGE_SDK_HTTP_SOURCES
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/http/NetworkProxySettings.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/http/NetworkRequest.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/http/NetworkResponse.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/http/NetworkSettings.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/http/NetworkUtils.cpp"
 )
 
 if (ANDROID)
@@ -151,17 +153,24 @@ file(GLOB NETWORK_ANDROID_SOURCE
     "${CMAKE_CURRENT_SOURCE_DIR}/src/network/android/*.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/network/socket/*.cpp"
 )
-set(NETWORK_SOURCE ${NETWORK_SOURCE} ${NETWORK_ANDROID_SOURCE})
+    set(NETWORK_SOURCE ${NETWORK_SOURCE} ${NETWORK_ANDROID_SOURCE})
+    set(EDGE_SDK_HTTP_SOURCES ${EDGE_SDK_HTTP_SOURCES} ${EDGE_SDK_HTTP_ANDROID_SOURCE})
+endif()
+if (UNIX AND NOT ANDROID)
+    set(NETWORK_SOURCE ${NETWORK_SOURCE} ${NETWORK_CURL_SOURCES})
+    set(EDGE_SDK_HTTP_SOURCES ${EDGE_SDK_HTTP_SOURCES} ${EDGE_SDK_HTTP_CURL_SOURCES})
 endif()
 if (IOS)
-set(NETWORK_SOURCE ${NETWORK_SOURCE} ${NETWORK_IOS_SOURCES})
+    set(NETWORK_SOURCE ${NETWORK_SOURCE} ${NETWORK_IOS_SOURCES})
+    set(EDGE_SDK_HTTP_SOURCES ${EDGE_SDK_HTTP_SOURCES} ${EDGE_SDK_HTTP_IOS_SOURCES})
 endif()
 if (WIN32)
-set(NETWORK_SOURCE ${NETWORK_SOURCE} ${NETWORK_WINHTTP_SOURCES})
+    set(NETWORK_SOURCE ${NETWORK_SOURCE} ${NETWORK_WINHTTP_SOURCES})
+    set(EDGE_SDK_HTTP_SOURCES ${EDGE_SDK_HTTP_SOURCES} ${EDGE_SDK_HTTP_WIN_SOURCES})
 endif()
 
 file(GLOB PLATFORM_SOURCE
-i    "${CMAKE_CURRENT_SOURCE_DIR}/src/context/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/context/*.cpp"
 )
 file(GLOB PORTING_SOURCE
     "${CMAKE_CURRENT_SOURCE_DIR}/src/porting/*.cpp"
@@ -183,7 +192,7 @@ file(GLOB CORE_HEADERS
     ${CLIENT_HEADERS}
     ${GENERATED_HEADERS}
     ${NETWORK_HEADERS}
-    ${NETWORK2_HEADERS}
+    ${EDGE_SDK_HTTP_HEADERS}
     ${PLATFORM_HEADERS}
     ${PORTING_HEADERS}
     ${UTILS_HEADERS}
@@ -202,7 +211,7 @@ file(GLOB CORE_SOURCE
     ${CLIENT_SOURCE}
     ${GENERATED_SOURCE}
     ${NETWORK_SOURCE}
-    ${NETWORK2_SOURCE}
+    ${EDGE_SDK_HTTP_SOURCES}
     ${PLATFORM_SOURCE}
     ${PORTING_SOURCE}
     ${UTILS_SOURCE}
@@ -216,7 +225,6 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/include)
 
 add_library(${PROJECT_NAME}
     ${CORE_SOURCE}
-    ${NETWORK_CURL_SOURCES}
     ${CORE_HEADERS})
 
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -295,6 +303,7 @@ endif()
 
 # install component
 install (FILES ${NETWORK_HEADERS} DESTINATION ${INCLUDE_DIRECTORY}/olp/core/network)
+install (FILES ${EDGE_SDK_HTTP_HEADERS} DESTINATION ${INCLUDE_DIRECTORY}/olp/core/http)
 install (FILES ${PLATFORM_HEADERS} DESTINATION ${INCLUDE_DIRECTORY}/olp/core/platform)
 install (FILES ${PORTING_HEADERS} DESTINATION ${INCLUDE_DIRECTORY}/olp/core/porting)
 install (FILES ${UTILS_HEADERS} DESTINATION ${INCLUDE_DIRECTORY}/olp/core/utils)

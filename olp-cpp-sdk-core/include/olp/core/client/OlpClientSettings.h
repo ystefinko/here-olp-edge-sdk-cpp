@@ -36,6 +36,14 @@ class NetworkConfig;
 class HttpResponse;
 }  // namespace network
 
+namespace thread {
+class TaskScheduler;
+}  // namespace thread
+
+namespace http {
+class Network;
+}  // namespace http
+
 namespace client {
 
 using NetworkAsyncCallback = std::function<void(network::HttpResponse)>;
@@ -167,6 +175,18 @@ struct OlpClientSettings {
    * @brief The network handler.
    */
   boost::optional<NetworkAsyncHandler> network_async_handler = boost::none;
+
+  /**
+   * @brief The task scheduler instance. In case of nullptr set, all request
+   * calls will be performed synchronous.
+   */
+  std::shared_ptr<thread::TaskScheduler> task_scheduler = nullptr;
+
+  /**
+   * @brief The network instance to be used to internally operate with OLP
+   * services.
+   */
+  std::shared_ptr<http::Network> network_request_handler = nullptr;
 };
 
 }  // namespace client

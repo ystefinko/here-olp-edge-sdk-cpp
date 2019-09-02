@@ -4,7 +4,7 @@ mkdir -p build && cd build
 cmake .. -DCMAKE_TOOLCHAIN_FILE="$WORKSPACE/android-ndk-r20/build/cmake/android.toolchain.cmake" -DANDROID_PLATFORM=android-28 -DANDROID_ABI=arm64-v8a -DEDGE_SDK_ENABLE_TESTING=NO -DEDGE_SDK_BUILD_EXAMPLES=ON
 #cmake --build .
 sudo make install -j16
-cd examples/dataservice-read/android
-( cat $WORKSPACE/build/external/boost/external_boost/boost/version.hpp | grep "BOOST_LIB_VERSION" )  || true
-( find / -name version.hpp -type f )  || true
+cd $WORKSPACE/build/examples/dataservice-read/android
+sudo ./gradlew assemble
+cd $WORKSPACE/build/examples/dataservice-write/android
 sudo ./gradlew assemble

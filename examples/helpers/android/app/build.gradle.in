@@ -33,7 +33,7 @@ android {
                         "-DBOOST_ROOT=@BOOST_ROOT@",
                         "-DBoost_INCLUDE_DIR=@BOOST_ROOT@",
                         "-DBoost_LIBRARY_DIR=@BOOST_ROOT@",
-                        "-DANDROID_PLATFORM=android-28"
+                        "-DANDROID_PLATFORM=@ANDROID_PLATFORM@"
 
                 cppFlags "-std=c++11"
                 targets "@EDGE_SDK_EXAMPLE_TARGET_NAME@"
