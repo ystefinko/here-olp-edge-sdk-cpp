@@ -57,10 +57,13 @@ CatalogClientImpl::CatalogClientImpl(
   data_repo_ = std::make_shared<DataRepository>(hrn_, api_repo, catalog_repo_,
                                                 partition_repo_, cache);
 
+  auto prefetch_repo = std::make_shared<PrefetchTilesRepository>(
+      hrn, api_repo, partition_repo_->GetPartitionsCacheRepository(),
+      settings_);
+
   prefetch_provider_ = std::make_shared<PrefetchTilesProvider>(
-      hrn_, api_repo, catalog_repo_, data_repo_,
-      std::make_shared<PrefetchTilesRepository>(
-          hrn, api_repo, partition_repo_->GetPartitionsCacheRepository()));
+      hrn_, api_repo, catalog_repo_, data_repo_, std::move(prefetch_repo),
+      settings_);
 
   pending_requests_ = std::make_shared<PendingRequests>();
 }
@@ -76,31 +79,33 @@ CancellationToken CatalogClientImpl::GetCatalog(
     const CatalogRequest& request, const CatalogResponseCallback& callback) {
   EDGE_SDK_LOG_TRACE_F(kLogTag, "GetCatalog '%s'", request.CreateKey().c_str());
   CancellationToken token;
-  int64_t request_key = pending_requests_->GenerateKey();
+  int64_t request_key = pending_requests_->GenerateRequestPlaceholder();
   auto pending_requests = pending_requests_;
   auto request_callback = [pending_requests, request_key,
                            callback](CatalogResponse response) {
     EDGE_SDK_LOG_INFO_F(kLogTag, "GetCatalog remove key: %ld", request_key);
-    pending_requests->Remove(request_key);
-    callback(response);
+    if (pending_requests->Remove(request_key)) {
+      callback(response);
+    }
   };
   if (CacheWithUpdate == request.GetFetchOption()) {
     auto req = request;
     token = catalog_repo_->getCatalog(req.WithFetchOption(CacheOnly),
                                       request_callback);
-    auto onlineKey = pending_requests_->GenerateKey();
+    auto onlineKey = pending_requests_->GenerateRequestPlaceholder();
     EDGE_SDK_LOG_INFO_F(kLogTag, "GetCatalog add key: %ld", onlineKey);
-    pending_requests_->Add(catalog_repo_->getCatalog(
-                               req.WithFetchOption(OnlineIfNotFound),
-                               [pending_requests, onlineKey](CatalogResponse) {
-                                 pending_requests->Remove(onlineKey);
-                               }),
-                           onlineKey);
+    pending_requests_->Insert(
+        catalog_repo_->getCatalog(
+            req.WithFetchOption(OnlineIfNotFound),
+            [pending_requests, onlineKey](CatalogResponse) {
+              pending_requests->Remove(onlineKey);
+            }),
+        onlineKey);
   } else {
     EDGE_SDK_LOG_INFO_F(kLogTag, "GetCatalog existing: %ld", request_key);
     token = catalog_repo_->getCatalog(request, request_callback);
   }
-  pending_requests_->Add(token, request_key);
+  pending_requests_->Insert(token, request_key);
   return token;
 }
 
@@ -117,21 +122,22 @@ CancellationToken CatalogClientImpl::GetCatalogMetadataVersion(
     const CatalogVersionCallback& callback) {
   EDGE_SDK_LOG_TRACE_F(kLogTag, "GetCatalog '%s'", request.CreateKey().c_str());
   CancellationToken token;
-  int64_t request_key = pending_requests_->GenerateKey();
+  int64_t request_key = pending_requests_->GenerateRequestPlaceholder();
   auto pending_requests = pending_requests_;
   auto request_callback = [pending_requests, request_key,
                            callback](CatalogVersionResponse response) {
     EDGE_SDK_LOG_INFO_F(kLogTag, "GetCatalog remove key: %ld", request_key);
-    pending_requests->Remove(request_key);
-    callback(response);
+    if (pending_requests->Remove(request_key)) {
+      callback(response);
+    }
   };
   if (CacheWithUpdate == request.GetFetchOption()) {
     auto req = request;
     token = catalog_repo_->getLatestCatalogVersion(
         req.WithFetchOption(CacheOnly), request_callback);
-    auto onlineKey = pending_requests_->GenerateKey();
+    auto onlineKey = pending_requests_->GenerateRequestPlaceholder();
     EDGE_SDK_LOG_INFO_F(kLogTag, "GetCatalog add key: %ld", onlineKey);
-    pending_requests_->Add(
+    pending_requests_->Insert(
         catalog_repo_->getLatestCatalogVersion(
             req.WithFetchOption(OnlineIfNotFound),
             [pending_requests, onlineKey](CatalogVersionResponse) {
@@ -142,7 +148,7 @@ CancellationToken CatalogClientImpl::GetCatalogMetadataVersion(
     EDGE_SDK_LOG_INFO_F(kLogTag, "GetCatalog existing: %ld", request_key);
     token = catalog_repo_->getLatestCatalogVersion(request, request_callback);
   }
-  pending_requests_->Add(token, request_key);
+  pending_requests_->Insert(token, request_key);
   return token;
 }
 
@@ -160,19 +166,20 @@ olp::client::CancellationToken CatalogClientImpl::GetPartitions(
     const PartitionsRequest& request,
     const PartitionsResponseCallback& callback) {
   CancellationToken token;
-  int64_t request_key = pending_requests_->GenerateKey();
+  int64_t request_key = pending_requests_->GenerateRequestPlaceholder();
   auto pending_requests = pending_requests_;
   auto request_callback = [pending_requests, request_key,
                            callback](PartitionsResponse response) {
-    pending_requests->Remove(request_key);
-    callback(response);
+    if (pending_requests->Remove(request_key)) {
+      callback(response);
+    }
   };
   if (CacheWithUpdate == request.GetFetchOption()) {
     auto req = request;
     token = partition_repo_->GetPartitions(req.WithFetchOption(CacheOnly),
                                            request_callback);
-    auto onlineKey = pending_requests_->GenerateKey();
-    pending_requests_->Add(
+    auto onlineKey = pending_requests_->GenerateRequestPlaceholder();
+    pending_requests_->Insert(
         partition_repo_->GetPartitions(
             req.WithFetchOption(OnlineIfNotFound),
             [pending_requests, onlineKey](PartitionsResponse) {
@@ -182,7 +189,7 @@ olp::client::CancellationToken CatalogClientImpl::GetPartitions(
   } else {
     token = partition_repo_->GetPartitions(request, request_callback);
   }
-  pending_requests_->Add(token, request_key);
+  pending_requests_->Insert(token, request_key);
   return token;
 }
 
@@ -198,19 +205,20 @@ CatalogClientImpl::GetPartitions(const PartitionsRequest& request) {
 client::CancellationToken CatalogClientImpl::GetData(
     const DataRequest& request, const DataResponseCallback& callback) {
   CancellationToken token;
-  int64_t request_key = pending_requests_->GenerateKey();
+  int64_t request_key = pending_requests_->GenerateRequestPlaceholder();
   auto pending_requests = pending_requests_;
   auto request_callback = [pending_requests, request_key,
                            callback](DataResponse response) {
-    pending_requests->Remove(request_key);
-    callback(response);
+    if (pending_requests->Remove(request_key)) {
+      callback(response);
+    }
   };
   if (CacheWithUpdate == request.GetFetchOption()) {
     auto req = request;
     token =
         data_repo_->GetData(req.WithFetchOption(CacheOnly), request_callback);
-    auto onlineKey = pending_requests_->GenerateKey();
-    pending_requests_->Add(
+    auto onlineKey = pending_requests_->GenerateRequestPlaceholder();
+    pending_requests_->Insert(
         data_repo_->GetData(req.WithFetchOption(OnlineIfNotFound),
                             [pending_requests, onlineKey](DataResponse) {
                               pending_requests->Remove(onlineKey);
@@ -219,7 +227,7 @@ client::CancellationToken CatalogClientImpl::GetData(
   } else {
     token = data_repo_->GetData(request, request_callback);
   }
-  pending_requests_->Add(token, request_key);
+  pending_requests_->Insert(token, request_key);
   return token;
 }
 
@@ -234,7 +242,7 @@ client::CancellableFuture<DataResponse> CatalogClientImpl::GetData(
 client::CancellationToken CatalogClientImpl::PrefetchTiles(
     const PrefetchTilesRequest& request,
     const PrefetchTilesResponseCallback& callback) {
-  int64_t request_key = pending_requests_->GenerateKey();
+  int64_t request_key = pending_requests_->GenerateRequestPlaceholder();
   auto request_callback = [=](const PrefetchTilesResponse& response) {
     pending_requests_->Remove(request_key);
     callback(response);
@@ -242,7 +250,7 @@ client::CancellationToken CatalogClientImpl::PrefetchTiles(
 
   auto token = prefetch_provider_->PrefetchTiles(request, callback);
 
-  pending_requests_->Add(token, request_key);
+  pending_requests_->Insert(token, request_key);
   return token;
 }
 

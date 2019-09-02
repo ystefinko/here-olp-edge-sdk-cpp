@@ -38,6 +38,7 @@
 #include "SignUpResultImpl.h"
 #include "olp/authentication/AuthenticationError.h"
 #include "olp/core/client/CancellationToken.h"
+#include "olp/core/http/NetworkConstants.h"
 #include "olp/core/network/HttpStatusCode.h"
 #include "olp/core/network/Network.h"
 #include "olp/core/network/NetworkRequest.h"
@@ -62,8 +63,6 @@ static const std::string PARAM_QUOTE = "\"";
 static const char LINE_FEED = '\n';
 
 // Tags
-static const std::string AUTHORIZATION = "Authorization";
-static const std::string CONTENT_TYPE = "Content-Type";
 static const std::string APPLICATION_JSON = "application/json";
 static const std::string OAUTH_POST = "POST";
 static const std::string OAUTH_CONSUMER_KEY = "oauth_consumer_key";
@@ -108,9 +107,9 @@ namespace authentication {
 
 enum class FederatedSignInType { FacebookSignIn, GoogleSignIn, ArcgisSignIn };
 
-class AuthenticationClient::Impl {
+class AuthenticationClient::Impl final {
  public:
-  class ScopedNetwork {
+  class ScopedNetwork final {
    public:
     ScopedNetwork(const NetworkConfig& config) : network() {
       network.Start(config);
@@ -128,8 +127,6 @@ class AuthenticationClient::Impl {
    * @param token_cache_limit Maximum number of tokens that will be cached.
    */
   Impl(const std::string& authentication_server_url, size_t token_cache_limit);
-
-  virtual ~Impl() = default;
 
   /**
    * @brief Sign in with client credentials
@@ -271,8 +268,10 @@ client::CancellationToken AuthenticationClient::Impl::SignInClient(
   url.append(OAUTH_ENDPOINT);
   NetworkRequest request(url, 0, NetworkRequest::PriorityDefault,
                          NetworkRequest::HttpVerb::POST);
-  request.AddHeader(AUTHORIZATION, generateHeader(credentials, url));
-  request.AddHeader(CONTENT_TYPE, APPLICATION_JSON);
+  request.AddHeader(http::kAuthorizationHeader,
+                    generateHeader(credentials, url));
+  request.AddHeader(http::kContentTypeHeader, APPLICATION_JSON);
+  request.AddHeader(http::kUserAgentHeader, http::kOlpSdkUserAgent);
 
   std::shared_ptr<std::stringstream> payload =
       std::make_shared<std::stringstream>();
@@ -390,8 +389,10 @@ client::CancellationToken AuthenticationClient::Impl::HandleUserRequest(
   url.append(endpoint);
   NetworkRequest request(url, 0, NetworkRequest::PriorityDefault,
                          NetworkRequest::HttpVerb::POST);
-  request.AddHeader(AUTHORIZATION, generateHeader(credentials, url));
-  request.AddHeader(CONTENT_TYPE, APPLICATION_JSON);
+  request.AddHeader(http::kAuthorizationHeader,
+                    generateHeader(credentials, url));
+  request.AddHeader(http::kContentTypeHeader, APPLICATION_JSON);
+  request.AddHeader(olp::http::kUserAgentHeader, olp::http::kOlpSdkUserAgent);
 
   std::shared_ptr<std::stringstream> payload =
       std::make_shared<std::stringstream>();
@@ -476,8 +477,10 @@ client::CancellationToken AuthenticationClient::Impl::SignUpHereUser(
   url.append(USER_ENDPOINT);
   NetworkRequest request(url, 0, NetworkRequest::PriorityDefault,
                          NetworkRequest::HttpVerb::POST);
-  request.AddHeader(AUTHORIZATION, generateHeader(credentials, url));
-  request.AddHeader(CONTENT_TYPE, APPLICATION_JSON);
+  request.AddHeader(http::kAuthorizationHeader,
+                    generateHeader(credentials, url));
+  request.AddHeader(http::kContentTypeHeader, APPLICATION_JSON);
+  request.AddHeader(http::kUserAgentHeader, http::kOlpSdkUserAgent);
 
   std::shared_ptr<std::stringstream> payload =
       std::make_shared<std::stringstream>();
@@ -519,7 +522,9 @@ client::CancellationToken AuthenticationClient::Impl::SignOut(
   url.append(SIGNOUT_ENDPOINT);
   NetworkRequest request(url, 0, NetworkRequest::PriorityDefault,
                          NetworkRequest::HttpVerb::POST);
-  request.AddHeader(AUTHORIZATION, generateBearerHeader(userAccessToken));
+  request.AddHeader(http::kAuthorizationHeader,
+                    generateBearerHeader(userAccessToken));
+  request.AddHeader(http::kUserAgentHeader, http::kOlpSdkUserAgent);
 
   std::shared_ptr<std::stringstream> payload =
       std::make_shared<std::stringstream>();
@@ -595,7 +600,7 @@ std::string AuthenticationClient::Impl::generateHeader(
 
 std::string AuthenticationClient::Impl::generateBearerHeader(
     const std::string& bearer_token) {
-  std::string authorization = "Bearer ";
+  std::string authorization = http::kBearer + std::string(" ");
   authorization += bearer_token;
   return authorization;
 }

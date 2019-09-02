@@ -1,5 +1,3 @@
-
-
 /*
  * Copyright (C) 2019 HERE Europe B.V.
  *
@@ -19,14 +17,27 @@
  * License-Filename: LICENSE
  */
 
-#import <UIKit/UIKit.h>
-#import <gtest/gtest.h>
+#pragma once
 
-#import "AppDelegate.h"
+#include <cstdint>
+#include <limits>
 
-int main(int argc, char * argv[]) {
-    @autoreleasepool {
-        NSLog(@"Starting gtest...");
-        return UIApplicationMain(argc, argv, nil, NSStringFromClass([AppDelegate class]));
-    }
-}
+namespace olp {
+namespace http {
+
+/**
+ * HTTP Headers
+ */
+static constexpr auto kAuthorizationHeader = "Authorization";
+static constexpr auto kContentTypeHeader = "Content-Type";
+static constexpr auto kUserAgentHeader = "User-Agent";
+
+/**
+ * Custom constants
+ */
+static constexpr auto kBearer = "Bearer";
+static constexpr auto kOlpSdkUserAgent =
+    "OLP-CPP-SDK/" EDGE_SDK_VERSION_STRING " (" EDGE_SDK_PLATFORM_NAME ")";
+
+}  // namespace http
+}  // namespace olp
