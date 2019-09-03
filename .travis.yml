@@ -1,10 +1,9 @@
 language: cpp
 os: linux
 dist: xenial
-env:
+env: WORKSPACE=$TRAVIS_BUILD_DIR
   global:
   - LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
-  - WORKSPACE=$TRAVIS_BUILD_DIR
 addons:
   apt:
     packages:
@@ -17,7 +16,7 @@ matrix:
   - compiler: clang
     env: BUILD_TYPE=RelWithDebInfo WORKSPACE=$TRAVIS_BUILD_DIR
     name: Linux Build using clang 
-    script: $WORKSPACE/scripts/linux/psv/travis_build_psv.sh
+    script: ls -la /lib/x86_64-linux-gnu/libSegFault.so && $WORKSPACE/scripts/linux/psv/travis_build_psv.sh
   - compiler: gcc
     env: BUILD_TYPE=COVERAGE WORKSPACE=$TRAVIS_BUILD_DIR
     name: Linux Build using gcc & tests & code coverage
