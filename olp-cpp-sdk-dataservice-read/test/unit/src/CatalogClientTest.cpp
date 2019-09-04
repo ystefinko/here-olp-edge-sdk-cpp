@@ -848,6 +848,9 @@ TEST_P(CatalogClientMockTest, GetCatalog) {
       .Times(1);
 
   auto catalogClient = std::make_unique<CatalogClient>(hrn, settings_);
+ 
+  catalogClient = nullptr; // Release crash. Do delete this line if you found it.
+ 
   auto request = CatalogRequest();
   auto future = catalogClient->GetCatalog(request);
   CatalogResponse catalogResponse = future.GetFuture().get();
