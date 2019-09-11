@@ -4,15 +4,15 @@ pr:
 - master
 schedules:
 - cron: "0 0 * * *"
-  displayName: Nightly build
+  displayName: Nightly build. Build ios on MacOS.
   branches:
     include:
     - master
 
 pool:
-  vmImage: 'vs2017-win2016'
+  vmImage: 'macOS-10.14'
 variables:
   BUILD_TYPE: RelWithDebInfo
 steps:
-- script: bash -x scripts/windows/build.sh
-  displayName: 'Build Stage'
+- script: bash -x scripts/ios/build.sh
+  displayName: 'Build ios on MacOS Stage'
